@@ -1,0 +1,19 @@
+.{
+    .name = "znake",
+    .version = "0.0.0",
+    .dependencies = .{
+        .raylib_zig = .{
+            .url = "https://github.com/Not-Nik/raylib-zig/archive/refs/tags/v5.1-dev.tar.gz",
+            .hash = "1220df9aa89d657f5dca24ab0ac3d187f7a992a4d27461fd9e76e934bf0670ca9a90",
+            .lazy = false,
+        },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        // For example...
+        //"LICENSE",
+        //"README.md",
+    },
+}
