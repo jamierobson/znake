@@ -139,6 +139,10 @@ const GameBoard = struct {
     }
 };
 
+export fn _start() void {
+    run() catch |err| std.debug.print("Error: {}\n", .{err});
+}
+
 pub fn run() !void {
     const screen_width = 800;
     const screen_height = 450;

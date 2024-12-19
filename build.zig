@@ -7,11 +7,14 @@ pub fn build(b: *std.Build) void {
     if (b.option(bool, "build_wasm", "Build wasm module")) |val| {
         build_wasm_opt = val;
     }
+    if (build_wasm_opt) {
+        b.sysroot = "./thirdparty/emsdk/upstream/emscripten";
+    }
     const target = if (build_wasm_opt) b.standardTargetOptions(
         .{
             .default_target = .{
                 .cpu_arch = .wasm32,
-                .os_tag = .macos,
+                .os_tag = .emscripten,
             },
         },
     ) else b.standardTargetOptions(.{});
@@ -24,14 +27,20 @@ pub fn build(b: *std.Build) void {
 
     const raylib = raylib_dep.module("raylib"); // main raylib module
     const raygui = raylib_dep.module("raygui"); // raygui module
-    const raylib_artifact = raylib_dep.artifact("raylib"); // raylib C library
+    const raylib_artifact = raylib_dep.artifact("raylib"); // raylib C addStaticLibrary
+
+    if (build_wasm_opt) {
+        raylib_artifact.addSystemIncludePath(b.path("thirdparty/emsdk/upstream/emscripten/cache/sysroot/include/"));
+        raylib_artifact.linkLibC();
+    }
 
     const lib = b.addStaticLibrary(.{
-        .name = "znake-lib",
+        .name = "znake",
         .root_source_file = b.path("src/root.zig"),
         .target = target,
         .optimize = .ReleaseSmall,
     });
+
     const exe = b.addExecutable(.{
         .name = "znake",
         .root_source_file = b.path("src/main.zig"),
@@ -39,6 +48,12 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    if (build_wasm_opt) {
+        lib.addSystemIncludePath(b.path("thirdparty/emsdk/upstream/emscripten/cache/sysroot/include/"));
+        exe.addSystemIncludePath(b.path("thirdparty/emsdk/upstream/emscripten/cache/sysroot/include/"));
+        exe.linkLibC();
+        lib.linkLibC();
+    }
     exe.linkLibrary(raylib_artifact);
     exe.root_module.addImport("raylib", raylib);
     exe.root_module.addImport("raygui", raygui);
